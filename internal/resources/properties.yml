@@ -1,0 +1,11 @@
+application:
+  business-name: "${BUSINESS_NAME}"
+
+firestore:
+  sales:
+    namespace: "${NAMESPACE}"
+    project-id: "${PROJECT_ID}"
+    collection-name: "${SALES_COLLECTION_NAME}"
+
+server:
+  port: "${SERVER_PORT}"
