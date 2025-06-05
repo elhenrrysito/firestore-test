@@ -1,24 +1,19 @@
 package main
 
 import (
-	"firestore-test/internal/infra/config/instance"
-	"firestore-test/internal/infra/config/property"
-	"gitlab.falabella.tech/rtl/logistics-corp/rso-portfolio/libraries/golang/lightms"
+	"log"
+
+	"firestore-test/internal/cmd/inject" // Import the inject package
 )
 
 func main() {
-	registerProperties()
-	registerPrimaries()
-	lightms.Run()
-}
+	// Call the injector function (which will be in wire_gen.go after generation)
+	app, err := inject.InitializeApp()
+	if err != nil {
+		log.Fatalf("Failed to initialize application: %v", err)
+	}
 
-func registerProperties() {
-	lightms.SetPropFilePath("internal/resources/properties.yml")
-	lightms.AddProperty(property.GetServerProperty())
-	lightms.AddProperty(property.GetApplicationProperty())
-	lightms.AddProperty(property.GetFirestoreProperty())
-}
-
-func registerPrimaries() {
-	lightms.AddPrimary(instance.GetControllerInstance)
+	// Start the application
+	// The Start method would come from your GinController or equivalent
+	app.Start()
 }

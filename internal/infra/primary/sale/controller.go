@@ -6,24 +6,26 @@ import (
 	"firestore-test/internal/core/domain"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"sync"
+	// "sync" // Remove this import
 )
 
-var (
-	controllerInstance *Controller
-	once               sync.Once
-)
+// var ( // Remove these lines
+// 	controllerInstance *Controller
+// 	once               sync.Once
+// )
 
 type Controller struct {
 	persistencePort core.SalePersistencePort
 	useCase         core.SaleUseCaseHandler
 }
 
+// Modified NewController
 func NewController(useCase core.SaleUseCaseHandler, persistencePort core.SalePersistencePort) *Controller {
-	once.Do(func() {
-		controllerInstance = &Controller{useCase: useCase, persistencePort: persistencePort}
-	})
-	return controllerInstance
+	// once.Do(func() { // Remove these lines
+	// 	controllerInstance = &Controller{useCase: useCase, persistencePort: persistencePort}
+	// })
+	// return controllerInstance // Remove this line
+	return &Controller{useCase: useCase, persistencePort: persistencePort} // Add this line
 }
 
 func (c *Controller) RunController(r *gin.Engine) {

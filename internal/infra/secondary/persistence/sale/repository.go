@@ -4,7 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"firestore-test/internal/core/domain"
-	"firestore-test/internal/infra/config/property"
+	// "firestore-test/internal/infra/config/property" // Remove this import
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,17 +13,26 @@ import (
 type Repository struct {
 	client         *firestore.Client
 	collectionName string
+	businessName   string // Add this
+	namespace      string // Add this
 }
 
-func NewRepository(client *firestore.Client) *Repository {
-	return &Repository{client: client, collectionName: property.GetFirestoreProperty().Firestore.Sales.CollectionName}
+// Modified NewRepository
+func NewRepository(client *firestore.Client, collectionName string, businessName string, namespace string) *Repository {
+	return &Repository{
+		client:         client,
+		collectionName: collectionName,
+		businessName:   businessName,
+		namespace:      namespace,
+	}
 }
 
 func (r *Repository) Save(sale domain.Sale) error {
 	saleDTO := toDTO(sale)
 
-	_, err := r.client.Collection(property.GetApplicationProperty().Application.BusinessName).
-		Doc(property.GetFirestoreProperty().Firestore.Sales.Namespace).
+	// Use injected fields
+	_, err := r.client.Collection(r.businessName).
+		Doc(r.namespace).
 		Collection(r.collectionName).
 		Doc(sale.OrderNumber).
 		Create(context.Background(), saleDTO)
@@ -35,8 +44,9 @@ func (r *Repository) Save(sale domain.Sale) error {
 }
 
 func (r *Repository) FindByOrderNumber(orderNumber string) (*domain.Sale, error) {
-	doc, err := r.client.Collection(property.GetApplicationProperty().Application.BusinessName).
-		Doc(property.GetFirestoreProperty().Firestore.Sales.Namespace).
+	// Use injected fields
+	doc, err := r.client.Collection(r.businessName).
+		Doc(r.namespace).
 		Collection(r.collectionName).
 		Doc(orderNumber).
 		Get(context.Background())
@@ -52,25 +62,25 @@ func (r *Repository) FindByOrderNumber(orderNumber string) (*domain.Sale, error)
 	}
 
 	var saleDTO DTO
-
 	err = doc.DataTo(&saleDTO)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to convert sale data to DTO for order number %s: %w", orderNumber, err)
 	}
 
-	sale, err := toDomain(saleDTO)
+	saleDomain, err := toDomain(saleDTO) // Renamed variable to avoid conflict
 	if err != nil {
 		return nil, fmt.Errorf("error trying to convert sale DTO to domain for order number %s: %w", orderNumber, err)
 	}
 
-	return sale, nil
+	return saleDomain, nil
 }
 
 func (r *Repository) Update(sale domain.Sale) error {
 	saleDTO := toDTO(sale)
 
-	_, err := r.client.Collection(property.GetApplicationProperty().Application.BusinessName).
-		Doc(property.GetFirestoreProperty().Firestore.Sales.Namespace).
+	// Use injected fields
+	_, err := r.client.Collection(r.businessName).
+		Doc(r.namespace).
 		Collection(r.collectionName).
 		Doc(sale.OrderNumber).
 		Set(context.Background(), saleDTO)
